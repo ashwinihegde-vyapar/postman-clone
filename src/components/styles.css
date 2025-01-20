@@ -1,0 +1,71 @@
+/* Request Form Styles */
+.request-form {
+  width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.request-form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.request-form input,
+.request-form textarea,
+.request-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.request-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.request-form button:hover {
+  background-color: #45a049;
+}
+
+/* Response Section Styles */
+.response {
+  margin-top: 20px;
+  width: 600px;
+  margin: 0 auto;
+}
+
+.response-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.response-meta {
+  display: flex;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.response-meta span {
+  margin-right: 20px;
+}
+
+.response pre {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
