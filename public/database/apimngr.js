@@ -25,6 +25,17 @@ const getCollectionName = (id) => {
     return db.prepare(`SELECT name FROM collections WHERE id= ?`).get(id).name;
   };
   
+
+const validateCollectionName = (name) => {
+    const c_id = db.prepare(`SELECT id FROM collections WHERE name = ?`).get(name);
+    if (c_id) {
+        return c_id.id;
+    }
+    else {
+        return 0;
+    }
+};
+  
   // Get all requests in a collection
 const getRequestsInCollection = (collectionId) => {
     return db
@@ -37,5 +48,6 @@ module.exports = {
     addRequestToCollection, 
     getCollections, 
     getRequestsInCollection,
-    getCollectionName
+    getCollectionName,
+    validateCollectionName
 };

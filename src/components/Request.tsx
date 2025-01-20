@@ -3,13 +3,14 @@ import axios from 'axios';
 import './styles.css'; // Import the CSS file
 // import compilerRuntime from 'react/compiler-runtime';
 
-const { addRequestToCollection, getRequestsInCollection, getCollectionName} = window.sqlite.apimngr;
+const { addRequestToCollection, getRequestsInCollection, validateCollectionName, createCollection} = window.sqlite.apimngr;
 
 export default function Request({ setResponse, setLoading, selectedCollection }) {
   const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/todos/1');
   const [reqName, setReqName] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
+  const [warning, setWarning] = useState("");
 
   console.log(collectionName);
   const [bodyData, setBodyData] = useState({
@@ -30,11 +31,19 @@ export default function Request({ setResponse, setLoading, selectedCollection })
   const handleOnInputSend = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+    setWarning("");
     const timestamp = new Date().toISOString(); // Get the current timestamp
 
     try {
-      addRequestToCollection(selectedCollection, collectionName, url, reqMethod, timestamp); // Save the request with timestamp
+      const collection_id = validateCollectionName(collectionName);
+      if (collection_id) {
+        addRequestToCollection(collection_id, collectionName, url, reqMethod, timestamp);
+      }
+      else {
+        setWarning(`Collection "${collectionName}" does not exist. Please create it first.`);
+      }
+
+
     } catch (e) {
       console.error('Error:', e);
     }
@@ -137,6 +146,8 @@ export default function Request({ setResponse, setLoading, selectedCollection })
         <button type="submit">Send Request</button>
       </form>
   
+      {warning && <div className="warning-message">{warning}</div>}
+
       <div className="request-list">
         {requests.length > 0 && <h2>Requests in Collection</h2>}
         <ul>

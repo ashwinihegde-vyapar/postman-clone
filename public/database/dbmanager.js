@@ -36,12 +36,12 @@ db.prepare(`
 
 const insertTestData = () => {
   const insertCollection = db.prepare("INSERT INTO collections (name) VALUES (?)");
-  insertCollection.run("Collection 1");
+  insertCollection.run("collection 1");
 
 };
 
 // // Run the function to insert test data
-insertTestData();
+// insertTestData();
 
 const getCollections = db.prepare("SELECT * FROM collections").all();
 console.log("Collections:", getCollections);
