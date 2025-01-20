@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles.css'; // Import the CSS file
+// import compilerRuntime from 'react/compiler-runtime';
 
-const { addRequestToCollection, getRequestsInCollection } = window.sqlite.apimngr;
+const { addRequestToCollection, getRequestsInCollection, getCollectionName} = window.sqlite.apimngr;
 
-export default function Request({ setResponse, setLoading }) {
+export default function Request({ setResponse, setLoading, selectedCollection }) {
   const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/todos/1');
-  const [name, setName] = useState('default');
+  const [reqName, setReqName] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
+  const [collectionName, setCollectionName] = useState("");
+
+  console.log(collectionName);
   const [bodyData, setBodyData] = useState({
     title: '',
     body: '',
@@ -15,55 +19,57 @@ export default function Request({ setResponse, setLoading }) {
   });
   const [requests, setRequests] = useState([]);
 
-  // Fetch requests for the selected collection
-  // useEffect(() => {
-  //   if (selectedCollection) {
-  //     const loadedRequests = getRequestsInCollection(selectedCollection) || [];
-  //     setRequests(loadedRequests);
-  //   }
-  // }, [selectedCollection]);
+  useEffect(() => {
+    if (selectedCollection) {
+      const loadedRequests = getRequestsInCollection(selectedCollection) || [];
+      console.log(loadedRequests);
+      setRequests(loadedRequests);
+    }
+  }, [selectedCollection]);
 
   const handleOnInputSend = async (e) => {
     e.preventDefault();
     setLoading(true);
+  
+    const timestamp = new Date().toISOString(); // Get the current timestamp
 
-    // try {
-    //   // Save the request to the selected collection
-    //   addRequestToCollection(name.id, name, url, reqMethod);
-    // } catch (e) {
-    //   console.error('Error:', e);
-    // }
-
+    try {
+      addRequestToCollection(selectedCollection, collectionName, url, reqMethod, timestamp); // Save the request with timestamp
+    } catch (e) {
+      console.error('Error:', e);
+    }
+  
     let data = null;
-
+  
     if (reqMethod === 'POST') {
       data = bodyData;
     }
-
+  
     try {
       const response = await axios({
         url: url,
         method: reqMethod,
         data,
       });
-
+  
       setResponse(response);
-    } catch (e) {
+    } 
+    catch (e) {
       console.error('Error:', e);
       setResponse(e);
     }
-
+  
     setLoading(false);
-
-    // Refresh the list of requests
-    const updatedRequests = getRequestsInCollection(name) || [];
+  
+    const updatedRequests = getRequestsInCollection(selectedCollection) || [];
     setRequests(updatedRequests);
+    console.log(updatedRequests);
   };
 
   return (
     <div className="request-manager">
       <form onSubmit={handleOnInputSend} className="request-form">
-        <h2>Send</h2>
+        <h2>Create or Send Request</h2>
         <div>
           <label>API URL</label>
           <input
@@ -72,16 +78,27 @@ export default function Request({ setResponse, setLoading }) {
             onChange={(e) => setUrl(e.target.value)}
           />
         </div>
+  
+        <div>
+          <label>Request Name</label>
+          <input
+            type="text"
+            value={reqName}
+            placeholder="type your request name"
+            onChange={(e) => setReqName(e.target.value)}
+          />
+        </div>
 
         <div>
           <label>Collection Name</label>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={collectionName}
+            placeholder="type your collection name"
+            onChange={(e) => setCollectionName(e.target.value)}
           />
         </div>
-
+  
         <div>
           <label>Request Method</label>
           <select
@@ -92,7 +109,7 @@ export default function Request({ setResponse, setLoading }) {
             <option value="POST">POST</option>
           </select>
         </div>
-
+  
         {reqMethod === 'POST' && (
           <>
             <div>
@@ -116,12 +133,12 @@ export default function Request({ setResponse, setLoading }) {
             </div>
           </>
         )}
-
+  
         <button type="submit">Send Request</button>
       </form>
-
+  
       <div className="request-list">
-        {/* <h2>Requests in Collection</h2> */}
+        {requests.length > 0 && <h2>Requests in Collection</h2>}
         <ul>
           {requests.map((request) => (
             <li key={request.id} className="request-item">

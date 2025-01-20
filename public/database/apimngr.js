@@ -8,12 +8,12 @@ const createCollection = (name) => {
 };
   
   // Add a request to a collection
-const addRequestToCollection = (collectionId, name, url, method) => {
+const addRequestToCollection = (collectionId, name, url, method, timestamp) => {
     const stmt = db.prepare(`
-      INSERT INTO collection_requests (collection_id, name, url, method)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO collection_requests (collection_id, name, url, method, timestamp)
+      VALUES (?, ?, ?, ?, ?)
     `);
-    stmt.run(collectionId, name, url, method);
+    stmt.run(collectionId, name, url, method, timestamp);
   };
   
   // Get all collections
@@ -21,16 +21,21 @@ const getCollections = () => {
     return db.prepare(`SELECT * FROM collections`).all();
   };
   
+const getCollectionName = (id) => {
+    return db.prepare(`SELECT name FROM collections WHERE id= ?`).get(id).name;
+  };
+  
   // Get all requests in a collection
-const getRequestsInCollection = (name) => {
+const getRequestsInCollection = (collectionId) => {
     return db
-      .prepare(`SELECT * FROM collection_requests WHERE name = ?`)
-      .all(name);
+      .prepare(`SELECT * FROM collection_requests WHERE collection_id = ?`)
+      .all(collectionId);
   };
 
 module.exports = { 
     createCollection, 
     addRequestToCollection, 
     getCollections, 
-    getRequestsInCollection
+    getRequestsInCollection,
+    getCollectionName
 };

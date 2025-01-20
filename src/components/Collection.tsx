@@ -3,17 +3,40 @@ import React, { useState, useEffect } from 'react';
 export default function Collection({ onSelectCollection }) {
   const [collections, setCollections] = useState([]);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  const [requestsInCollection, setRequestsInCollection] = useState({});
 
+  // Fetch collections and requests when the component loads
   useEffect(() => {
     const loadedCollections = window.sqlite.apimngr?.getCollections() || [];
     setCollections(loadedCollections);
   }, []);
 
+  useEffect(() => {
+    if (selectedCollectionId !== null) {
+      // Fetch the requests for the selected collection
+      console.log("in collection", selectedCollectionId);
+      const requests = window.sqlite.apimngr?.getRequestsInCollection(selectedCollectionId) || [];
+      setRequestsInCollection((prev) => ({
+        ...prev,
+        [selectedCollectionId]: requests,
+      }));
+      console.log(requests);
+    }
+  }, [selectedCollectionId]);
+
   const handleCreateCollection = () => {
     if (!newCollectionName.trim()) return;
     const newId = window.sqlite.apimngr?.createCollection(newCollectionName);
-    setCollections([...collections, { id: newId, name: newCollectionName }]);
+    const newCollection = { id: newId, name: newCollectionName };
+    setCollections((prev) => [...prev, newCollection]);
     setNewCollectionName('');
+  };
+
+  const handleCollectionClick = (collectionId) => {
+    console.log("in collection", collectionId);
+    setSelectedCollectionId(collectionId);
+    onSelectCollection(collectionId); // Pass the selected collection ID to the parent
   };
 
   return (
@@ -23,13 +46,27 @@ export default function Collection({ onSelectCollection }) {
         {collections.map((collection) => (
           <li
             key={collection.id}
-            onClick={() => onSelectCollection(collection.id)}
+            onClick={() => handleCollectionClick(collection.id)}
             style={styles.collectionItem}
           >
-            {collection.name}
+            <strong>{collection.name}</strong>
+
+            {/* Display requests if the collection is selected */}
+            {selectedCollectionId === collection.id && (
+              <ul style={styles.requestList}>
+                {requestsInCollection[collection.id]?.map((request) => (
+                  <li key={request.id} style={styles.requestItem}>
+                    <div>{request.name}</div>
+                    <div>{request.method} - {request.url}</div>
+                    <div>{new Date(request.timestamp).toLocaleString()}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
+
       <div style={styles.newCollection}>
         <input
           type="text"
@@ -41,7 +78,6 @@ export default function Collection({ onSelectCollection }) {
         <button onClick={handleCreateCollection} style={styles.button}>
           Add
         </button>
-
       </div>
     </div>
   );
@@ -71,5 +107,13 @@ const styles = {
   button: {
     marginLeft: '5px',
     padding: '5px 10px',
+  },
+  requestList: {
+    paddingLeft: '20px',
+    marginTop: '10px',
+  },
+  requestItem: {
+    padding: '5px',
+    borderBottom: '1px solid #ddd',
   },
 };
