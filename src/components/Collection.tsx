@@ -71,7 +71,7 @@ export default function Collection({ onSelectCollection }) {
         <input
           type="text"
           value={newCollectionName}
-          onChange={(e) => setNewCollectionName(e.target.value)}
+          onChange={(e) => setNewCollectionName(e.target.value.toLowerCase())}
           placeholder="New Collection"
           style={styles.input}
         />
@@ -102,11 +102,21 @@ const styles = {
   },
   input: {
     width: '80%',
+    height: '25px',
     padding: '5px',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
   },
   button: {
-    marginLeft: '5px',
+    marginTop: '10px',
     padding: '5px 10px',
+    backgroundColor: 'orange',
+    color: '#fff',
+    border: 'none',
+    cursor: 'pointer',
+    width: '80px',
+    height: '30px',
+    borderRadius: '5px',
   },
   requestList: {
     paddingLeft: '20px',

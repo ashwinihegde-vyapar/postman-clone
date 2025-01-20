@@ -27,7 +27,7 @@ const getCollectionName = (id) => {
   
 
 const validateCollectionName = (name) => {
-    const c_id = db.prepare(`SELECT id FROM collections WHERE name = ?`).get(name);
+    const c_id = db.prepare(`SELECT id FROM collections WHERE name = ?`).get(name.toLowerCase());
     if (c_id) {
         return c_id.id;
     }
@@ -43,11 +43,19 @@ const getRequestsInCollection = (collectionId) => {
       .all(collectionId);
   };
 
+const groupRequestsByTime = () => {
+  const stmt = db.prepare(`SELECT * FROM collection_requests GROUP BY timestamp`);
+  const requests = stmt.all();
+  console.log(requests);
+  return requests;
+}
+
 module.exports = { 
     createCollection, 
     addRequestToCollection, 
     getCollections, 
     getRequestsInCollection,
     getCollectionName,
-    validateCollectionName
+    validateCollectionName,
+    groupRequestsByTime
 };

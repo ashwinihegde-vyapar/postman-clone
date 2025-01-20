@@ -11,8 +11,8 @@ db.pragma("journal_mode = WAL")
 
 
 // Create tables if they don't exist
-db.prepare(`drop table if exists collections`).run();
-db.prepare(`drop table if exists collection_requests`).run();
+// db.prepare(`drop table if exists collections`).run();
+// db.prepare(`drop table if exists collection_requests`).run();
 
 db.prepare(`
   CREATE TABLE IF NOT EXISTS collections (
@@ -34,11 +34,11 @@ db.prepare(`
   );
 `).run();
 
-const insertTestData = () => {
-  const insertCollection = db.prepare("INSERT INTO collections (name) VALUES (?)");
-  insertCollection.run("collection 1");
+// const insertTestData = () => {
+//   const insertCollection = db.prepare("INSERT INTO collections (name) VALUES (?)");
+//   insertCollection.run("collection 1");
 
-};
+// };
 
 // // Run the function to insert test data
 // insertTestData();

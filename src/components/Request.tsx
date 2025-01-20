@@ -7,7 +7,7 @@ const { addRequestToCollection, getRequestsInCollection, validateCollectionName,
 
 export default function Request({ setResponse, setLoading, selectedCollection }) {
   const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/todos/1');
-  const [reqName, setReqName] = useState("");
+  // const [reqName, setReqName] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
   const [warning, setWarning] = useState("");
@@ -88,7 +88,7 @@ export default function Request({ setResponse, setLoading, selectedCollection })
           />
         </div>
   
-        <div>
+        {/* <div>
           <label>Request Name</label>
           <input
             type="text"
@@ -96,7 +96,7 @@ export default function Request({ setResponse, setLoading, selectedCollection })
             placeholder="type your request name"
             onChange={(e) => setReqName(e.target.value)}
           />
-        </div>
+        </div> */}
 
         <div>
           <label>Collection Name</label>
