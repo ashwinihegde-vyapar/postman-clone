@@ -20,7 +20,7 @@ In the project directory, you can run:
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-### 'npm run electron'
+### `npm run electron`
 
 It will run the app as dekstop app in a window
 
