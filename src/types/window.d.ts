@@ -9,6 +9,8 @@ declare global {
         getCollections: () => any[];
         createCollection: (name: string) => number;
         validateCollectionName: (name: string) => number;
+        groupRequestsByTime: () => any[];
+        deleteCollection: (collectionId: number) => void;
       }
     }
   }

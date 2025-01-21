@@ -1,0 +1,108 @@
+.sidebar {
+    width: 40%;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-right: 1px solid #ddd;
+    height: 100vh;
+    overflow-y: auto;
+    border-radius: 10px;
+  }
+  
+  .tab-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  .tab-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #ddd;
+    border-radius: 5px;
+  }
+  
+  .tab-button.active {
+    background-color: orange;
+    color: white;
+  }
+  
+  .collectionItem {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .newCollection {
+    margin-top: 20px;
+  }
+  
+  .input {
+    width: 40%;
+    height: 25px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: orange;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: 80px;
+    height: 30px;
+    border-radius: 5px;
+  }
+  .delete-button {
+    margin-left: 10px;
+    background-color: rgb(211, 56, 56);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+    border-radius: 5px;
+  }
+
+  .display-button {
+    margin-left: 100px;
+    background-color: rgb(13, 93, 162);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: 80px;
+    height: 30px;
+    border-radius: 5px;
+  }
+
+  .close-button {
+    margin-left: 10px;
+    background-color:rgb(213, 225, 236);
+    color: #000;
+    border: none;
+    cursor: pointer;
+    width: 80px;
+    height: 30px;
+    border-radius: 5px;
+  }
+
+  .requestList {
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  
+  .requestItem {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .history-container {
+    margin-top: 20px;
+  }
+  
+  .history-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  

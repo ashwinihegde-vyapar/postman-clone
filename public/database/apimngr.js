@@ -46,8 +46,12 @@ const getRequestsInCollection = (collectionId) => {
 const groupRequestsByTime = () => {
   const stmt = db.prepare(`SELECT * FROM collection_requests GROUP BY timestamp`);
   const requests = stmt.all();
-  console.log(requests);
   return requests;
+}
+
+const deleteCollection = (collectionId) => {
+  const stmt = db.prepare(`DELETE FROM collections WHERE id = ?`);
+  stmt.run(collectionId);
 }
 
 module.exports = { 
@@ -57,5 +61,6 @@ module.exports = {
     getRequestsInCollection,
     getCollectionName,
     validateCollectionName,
-    groupRequestsByTime
+    groupRequestsByTime,
+    deleteCollection
 };

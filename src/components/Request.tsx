@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './styles.css'; // Import the CSS file
-// import compilerRuntime from 'react/compiler-runtime';
+import './styles.css';
 
-const { addRequestToCollection, getRequestsInCollection, validateCollectionName, createCollection} = window.sqlite.apimngr;
+const { addRequestToCollection, getRequestsInCollection, validateCollectionName, getCollections} = window.sqlite.apimngr;
 
-export default function Request({ setResponse, setLoading, selectedCollection }) {
+export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections}) {
   const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/todos/1');
-  // const [reqName, setReqName] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
-  const [warning, setWarning] = useState("");
 
   console.log(collectionName);
   const [bodyData, setBodyData] = useState({
@@ -31,19 +28,13 @@ export default function Request({ setResponse, setLoading, selectedCollection })
   const handleOnInputSend = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setWarning("");
-    const timestamp = new Date().toISOString(); // Get the current timestamp
+    const timestamp = new Date().toISOString(); 
 
     try {
       const collection_id = validateCollectionName(collectionName);
       if (collection_id) {
         addRequestToCollection(collection_id, collectionName, url, reqMethod, timestamp);
       }
-      else {
-        setWarning(`Collection "${collectionName}" does not exist. Please create it first.`);
-      }
-
-
     } catch (e) {
       console.error('Error:', e);
     }
@@ -73,14 +64,27 @@ export default function Request({ setResponse, setLoading, selectedCollection })
     const updatedRequests = getRequestsInCollection(selectedCollection) || [];
     setRequests(updatedRequests);
     console.log(updatedRequests);
+    updateHistory();
   };
 
   return (
     <div className="request-manager">
       <form onSubmit={handleOnInputSend} className="request-form">
         <h2>Create or Send Request</h2>
+
         <div>
-          <label>API URL</label>
+          <label>Method: </label>
+          <select
+            value={reqMethod}
+            onChange={(e) => setReqMethod(e.target.value)}
+            className="request-method"
+          >
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </div>
+        <div>
+          <label>API URL: </label>
           <input
             type="text"
             value={url}
@@ -88,34 +92,21 @@ export default function Request({ setResponse, setLoading, selectedCollection })
           />
         </div>
   
-        {/* <div>
-          <label>Request Name</label>
-          <input
-            type="text"
-            value={reqName}
-            placeholder="type your request name"
-            onChange={(e) => setReqName(e.target.value)}
-          />
-        </div> */}
-
         <div>
-          <label>Collection Name</label>
-          <input
-            type="text"
-            value={collectionName}
-            placeholder="type your collection name"
-            onChange={(e) => setCollectionName(e.target.value)}
-          />
-        </div>
-  
-        <div>
-          <label>Request Method</label>
+        <label>Collection: </label>
           <select
-            value={reqMethod}
-            onChange={(e) => setReqMethod(e.target.value)}
+            value={collectionName}
+            onChange={(e) => setCollectionName(e.target.value)}
+            className="collection-dropdown"
           >
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
+            <option value="" disabled>
+              Select a collection
+            </option>
+            {collections.map((collection) => (
+              <option key={collection.id} value={collection.name}>
+                {collection.name}
+              </option>
+            ))}
           </select>
         </div>
   
@@ -145,22 +136,6 @@ export default function Request({ setResponse, setLoading, selectedCollection })
   
         <button type="submit">Send Request</button>
       </form>
-  
-      {warning && <div className="warning-message">{warning}</div>}
-
-      <div className="request-list">
-        {requests.length > 0 && <h2>Requests in Collection</h2>}
-        <ul>
-          {requests.map((request) => (
-            <li key={request.id} className="request-item">
-              <strong>{request.name}</strong>
-              <div>Method: {request.method}</div>
-              <div>URL: {request.url}</div>
-              <div>Date: {new Date(request.timestamp).toLocaleString()}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }
