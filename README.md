@@ -22,7 +22,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ### `npm run electron`
 
-It will run the app as dekstop app in a window
+It will launch the app as a desktop application
 
 ### `npm test`
 
