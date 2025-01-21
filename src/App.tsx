@@ -47,3 +47,17 @@ const App = () => {
 };
 
 export default App;
+
+
+
+// 
+// https://jsonplaceholder.typicode.com/todos/
+// https://reqres.in/api/users
+// https://reqres.in/api/users/1
+// https://fakestoreapi.com/products/1
+// https://run.mocky.io/v3/b9b36e6a-7d52-4f3e-80d7-d56e1a61801a
+// https://www.boredapi.com/api/activity
+// https://catfact.ninja/fact
+// https://api.chucknorris.io/jokes/random
+// https://random-data-api.com/api/users/random_user
+// https://random-data-api.com/api/v2/beers

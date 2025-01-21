@@ -5,7 +5,7 @@ import './styles.css';
 const { addRequestToCollection, getRequestsInCollection, validateCollectionName, getCollections} = window.sqlite.apimngr;
 
 export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections}) {
-  const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/todos/1');
+  const [url, setUrl] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
 
@@ -89,6 +89,7 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            placeholder="Enter your URL"
           />
         </div>
   

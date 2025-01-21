@@ -1,6 +1,5 @@
 declare global {
   interface Window {
-    getApi: () => string;
     sqlite: {
       apimngr: {
         addRequestToCollection: (collectionId: number, name: string, url: string, method: string, timestamp: string) => void;
