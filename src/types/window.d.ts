@@ -2,16 +2,15 @@ declare global {
   interface Window {
     sqlite: {
       apimngr: {
-        addRequestToCollection: (collectionId: number, name: string, url: string, method: string, timestamp: string) => void;
-        getRequestsInCollection: (collectionId: number) => any[];
-        getCollectionName: (collectionId: number) => string;
-        getCollections: () => any[];
-        createCollection: (name: string) => number;
+        groupRequestsByTime: () => any;
+        addRequestToCollection: (id: number, name: string, url: string, method: string, timestamp: string) => void;
+        getRequestsInCollection: (id: number) => any[];
         validateCollectionName: (name: string) => number;
-        groupRequestsByTime: () => any[];
-        deleteCollection: (collectionId: number) => void;
-      }
-    }
+        deleteCollection: (id: number) => void;
+        getCollections: () => Array<{ id: number; name: string; }>;
+        createCollection: (name: string) => number;
+      } 
+    };
   }
 }
 

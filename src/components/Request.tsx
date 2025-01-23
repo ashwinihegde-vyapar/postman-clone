@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles.css';
+import { storeAPIResponse, getMostRecentResponse } from '../indexedDb';
+;
 
-const { addRequestToCollection, getRequestsInCollection, validateCollectionName, getCollections} = window.sqlite.apimngr;
+  
+const { addRequestToCollection, getRequestsInCollection, validateCollectionName} = window.sqlite.apimngr;
 
-export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections}) {
+export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections, setError}) {
   const [url, setUrl] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  console.log(collectionName);
   const [bodyData, setBodyData] = useState({
     title: '',
     body: '',
     userId: 1,
   });
-  const [requests, setRequests] = useState([]);
+
+  const [requests, setRequests] = useState({});
+
 
   useEffect(() => {
     if (selectedCollection) {
@@ -23,6 +28,7 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
       console.log(loadedRequests);
       setRequests(loadedRequests);
     }
+
   }, [selectedCollection]);
 
   const handleOnInputSend = async (e) => {
@@ -35,38 +41,37 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
       if (collection_id) {
         addRequestToCollection(collection_id, collectionName, url, reqMethod, timestamp);
       }
-    } catch (e) {
-      console.error('Error:', e);
-    }
-  
-    let data = null;
-  
-    if (reqMethod === 'POST') {
-      data = bodyData;
-    }
-  
-    try {
-      const response = await axios({
-        url: url,
-        method: reqMethod,
-        data,
-      });
-  
-      setResponse(response);
-    } 
+
+        const res = await axios({
+          url,
+          method: reqMethod,
+          data: reqMethod === 'POST' ? bodyData : null,
+        });
+
+        // Store response in IndexedDB
+        await storeAPIResponse({
+          url,
+          method: reqMethod,
+          data: res.data,
+          status: res.status,
+          headers: res.headers
+        });
+
+        setResponse(res);
+        setLoading(false);
+
+        const updatedRequests = getRequestsInCollection(selectedCollection) || [];
+        setRequests(updatedRequests);
+        updateHistory();
+      }
+
     catch (e) {
       console.error('Error:', e);
-      setResponse(e);
+      setError("Error: URL already exists in collection");
+      setLoading(false);
     }
+  }
   
-    setLoading(false);
-  
-    const updatedRequests = getRequestsInCollection(selectedCollection) || [];
-    setRequests(updatedRequests);
-    console.log(updatedRequests);
-    updateHistory();
-  };
-
   return (
     <div className="request-manager">
       <form onSubmit={handleOnInputSend} className="request-form">
@@ -90,6 +95,7 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter your URL"
+            required={true}
           />
         </div>
   
@@ -99,6 +105,7 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
             value={collectionName}
             onChange={(e) => setCollectionName(e.target.value)}
             className="collection-dropdown"
+            required={true}
           >
             <option value="" disabled>
               Select a collection
