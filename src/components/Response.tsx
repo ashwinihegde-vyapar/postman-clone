@@ -1,6 +1,7 @@
 import React, { useState, useEffect, cache } from 'react';
 import './styles.css';  
-import { getMostRecentResponse, getMostRecentRequestUrl } from '../indexedDb';
+import { getMostRecentResponse, storeAPIResponse, listAllResponses } from '../utils/indexedDb';
+import { json } from 'stream/consumers';
 
 export default function Response({ response, loading, isOnline, error }) {
   const [doc, setDoc] = useState('{}');
@@ -8,34 +9,47 @@ export default function Response({ response, loading, isOnline, error }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      
-      if(isOnline) {
+      if (isOnline && response?.data) {
         try {
           const jsonResponse = JSON.stringify(response.data, null, 2);
           setDoc(jsonResponse);
+          // Store/update the response
+          await storeAPIResponse(response.config.url, response.data);
+        } catch (error) {
+          console.error('Error handling response:', error);
         }
-        catch {
-            setDoc('{}');
-        }
-      }
-      else {
+      } else if (!isOnline) {
         try {
+          // First try to get response for specific URL if available
+          // let cachedResponse = null;
+          // if (response?.config?.url) {
+          //   cachedResponse = await getResponseByUrl(response.config.url);
+          // }
+          
+          // If no specific response found, get most recent
+          // if (!cachedResponse) {
           const cachedResponse = await getMostRecentResponse();
-          setCachedResponse(cachedResponse);
+          // }
+          console.log(cachedResponse);
           if (cachedResponse) {
-            const responseData = JSON.stringify(cachedResponse, null, 2);
-            console.log(responseData);
+            setCachedResponse(cachedResponse);
+            const responseData = JSON.stringify(cachedResponse.data, null, 2);
             setDoc(responseData);
+            console.log('Using cached response from:', new Date(cachedResponse.timestamp));
+          } else {
+            setDoc('No cached response available');
+            setCachedResponse('');
           }
         } catch (err) {
           console.error('Error fetching cached response:', err);
-          setDoc('No cached response available');
+          setDoc('Error loading cached response');
+          setCachedResponse('');
         }
       }
-    } ; 
+    };
 
     fetchData();
-  }, [response, loading]);
+  }, [response, loading, isOnline]);
 
   const hasResponse = !(response == null);
 

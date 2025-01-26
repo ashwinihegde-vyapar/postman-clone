@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles.css';
-import { storeAPIResponse, getMostRecentResponse } from '../indexedDb';
-;
-
+import { storeAPIResponse } from '../utils/indexedDb';
   
-const { addRequestToCollection, getRequestsInCollection, validateCollectionName} = window.sqlite.apimngr;
+const { addRequestToCollection, getRequestsInCollection, validateCollectionName} = window.api;
 
-export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections, setError}) {
+export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections}) {
   const [url, setUrl] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  // const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [bodyData, setBodyData] = useState({
     title: '',
@@ -19,16 +17,17 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
     userId: 1,
   });
 
-  const [requests, setRequests] = useState({});
-
+  // const [requests, setRequests] = useState({});
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (selectedCollection) {
-      const loadedRequests = getRequestsInCollection(selectedCollection) || [];
-      console.log(loadedRequests);
-      setRequests(loadedRequests);
+    const loadrequests = async() => {
+      if (selectedCollection) {
+        const loadedRequests = await getRequestsInCollection(selectedCollection) || [];
+        console.log(loadedRequests);
+      }
     }
-
+    loadrequests();
   }, [selectedCollection]);
 
   const handleOnInputSend = async (e) => {
@@ -37,37 +36,38 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
     const timestamp = new Date().toISOString(); 
 
     try {
-      const collection_id = validateCollectionName(collectionName);
-      if (collection_id) {
-        addRequestToCollection(collection_id, collectionName, url, reqMethod, timestamp);
-      }
-
+      const collection_id = await validateCollectionName(collectionName);
+      console.log(collection_id);
+      if(collection_id) {
+        await addRequestToCollection({
+          collectionId: collection_id,
+          name: collectionName,
+          url: url,
+          method: reqMethod,
+          timestamp: timestamp
+        });
+      }   
+    } 
+    catch (e) {
+      setError("Error: URL already exists in collection");
+      // console.log(e);
+    }
+  try {
         const res = await axios({
           url,
           method: reqMethod,
-          data: reqMethod === 'POST' ? bodyData : null,
-        });
-
-        // Store response in IndexedDB
-        await storeAPIResponse({
-          url,
-          method: reqMethod,
-          data: res.data,
-          status: res.status,
-          headers: res.headers
+          data: reqMethod === '' ? bodyData : null,
         });
 
         setResponse(res);
         setLoading(false);
 
-        const updatedRequests = getRequestsInCollection(selectedCollection) || [];
-        setRequests(updatedRequests);
+        // const updatedRequests = getRequestsInCollection(selectedCollection) || [];
+        // setRequests(updatedRequests);
         updateHistory();
       }
-
     catch (e) {
       console.error('Error:', e);
-      setError("Error: URL already exists in collection");
       setLoading(false);
     }
   }
@@ -144,6 +144,7 @@ export default function Request({ setResponse, setLoading, selectedCollection, u
   
         <button type="submit">Send Request</button>
       </form>
+      {error && <p className="error-message">{error}</p>}
     </div>
   );
 }

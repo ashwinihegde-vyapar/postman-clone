@@ -36,7 +36,7 @@ export const storeAPIResponse = async (responseData) => {
     status: responseData.status,
     headers: responseData.headers
   };
-  await db.add(STORE_NAME, entry);
+  await db.put(STORE_NAME, entry);
 };
 
 export const getMostRecentResponse = async (url) => {

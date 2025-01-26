@@ -4,10 +4,10 @@ import Request from './components/Request.tsx';
 import Response from './components/Response.tsx';
 import Collection from './components/Collection.tsx';
 
-import { initDB, getAllResponses } from './indexedDb';
+import { initializeDatabase, cleanupDatabase } from './utils/indexedDb';
 
 
-const { groupRequestsByTime } = window.sqlite.apimngr;
+const { groupRequestsByTime } = window.api;
 
 const App = () => {
   
@@ -23,10 +23,18 @@ const App = () => {
 
   useEffect(() => {
     const initializeDB = async () => {
-      await initDB();
-      // Load cached responses
-      const responses = await getAllResponses();
-      setCachedResponses(responses);
+      // await cleanupDatabase();
+      await initializeDatabase();
+      
+      // Add cleanup listener
+      // window.api.onCleanup(async () => {
+      //   try {
+      //     await cleanupDatabase();
+      //     console.log('IndexedDB cleanup completed');
+      //   } catch (error) {
+      //     console.error('Error during IndexedDB cleanup:', error);
+      //   }
+      // });
     };
 
     initializeDB();
@@ -51,8 +59,8 @@ const App = () => {
     setSelectedCollection(collectionId);
   };
 
-  const updateHistory = () => {
-    const latestRequests = groupRequestsByTime();
+  const updateHistory = async() => {
+    const latestRequests = await groupRequestsByTime() || [];
     setRequests(latestRequests);
   };
 
@@ -81,7 +89,7 @@ const App = () => {
             selectedCollection={selectedCollection}
             updateHistory={updateHistory}
             collections={collections}
-            setError={setError}
+            // setError={setError}
           />
           }
           <Response response={response} loading={loading} error={error} isOnline={isOnline} />
