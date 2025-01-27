@@ -1,7 +1,6 @@
 import React, { useState, useEffect, cache } from 'react';
-import './styles.css';  
+import '../assets/styles.css';  
 import { getMostRecentResponse, storeAPIResponse, listAllResponses } from '../utils/indexedDb';
-import { json } from 'stream/consumers';
 
 export default function Response({ response, loading, isOnline, error }) {
   const [doc, setDoc] = useState('{}');

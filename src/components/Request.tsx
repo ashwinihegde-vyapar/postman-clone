@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './styles.css';
+import '../assets/styles.css';
 import { storeAPIResponse } from '../utils/indexedDb';
   
 const { addRequestToCollection, getRequestsInCollection, validateCollectionName} = window.api;

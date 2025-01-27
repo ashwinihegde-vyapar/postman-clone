@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './collection.css';
+import '../assets/collection.css';
 
 const { getCollections, getRequestsInCollection, createCollection, 
   deleteCollection, groupRequestsByTime, addRequestToCollection, getCollectionName } = window.api;
