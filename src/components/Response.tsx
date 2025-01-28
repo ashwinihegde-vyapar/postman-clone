@@ -1,8 +1,12 @@
 import React, { useState, useEffect, cache } from 'react';
+import { useSelector } from 'react-redux';
 import '../assets/styles.css';  
 import { getMostRecentResponse, storeAPIResponse, listAllResponses } from '../utils/indexedDb';
 
-export default function Response({ response, loading, isOnline, error }) {
+export default function Response({ loading, isOnline, error }) {
+
+  const response = useSelector((state: any) => state.response.items);
+
   const [doc, setDoc] = useState('{}');
   const [cachedResponse ,setCachedResponse] = useState('');
 

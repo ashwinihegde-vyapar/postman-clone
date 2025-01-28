@@ -15,7 +15,7 @@ const App = () => {
   const history = useSelector((state: any) => state.history.items);
   
   const [requestsInCollection, setRequestsInCollection] = useState({});
-  const [response, setResponse] = useState(null);
+  // const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [error, setError] = useState("");
@@ -92,13 +92,13 @@ const App = () => {
       <div className="request-response-container">
         {isOnline &&
           <Request
-            setResponse={setResponse}
+            // setResponse={setResponse}
             setLoading={setLoading}
             updateHistory={updateHistory}
             setRequestsInCollection={setRequestsInCollection}
           />
         }
-        <Response response={response} loading={loading} error={error} isOnline={isOnline} />
+        <Response loading={loading} error={error} isOnline={isOnline} />
       </div>
     </div>
   );

@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import '../assets/styles.css';
 import { addToHistory } from '../reducers/historySlice';
+import { setResponse } from '../reducers/responseSlice';
 
 const { addRequestToCollection, getRequestsInCollection, validateCollectionName } = window.api;
 
-export default function Request({ setResponse, setLoading, updateHistory, setRequestsInCollection }) {
+export default function Request({ setLoading, updateHistory, setRequestsInCollection }) {
   const dispatch = useDispatch();
   const selectedCollection = useSelector((state: any) => state.collections.selectedCollection);
   const collections = useSelector((state: any) => state.collections.items);
@@ -66,7 +67,7 @@ export default function Request({ setResponse, setLoading, updateHistory, setReq
         data: reqMethod === '' ? bodyData : null,
       });
 
-      setResponse(res);
+      dispatch(setResponse(res));
       setLoading(false);
 
       const date = new Date().toLocaleDateString();
