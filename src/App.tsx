@@ -4,7 +4,7 @@ import './assets/App.css';
 import Request from './components/Request.tsx';
 import Response from './components/Response.tsx';
 import Collection from './components/Collection.tsx';
-import { initializeDatabase } from './utils/indexedDb';
+import { initializeDatabase, cleanupDatabase } from './utils/indexedDb';
 import { setHistory } from './reducers/historySlice';
 import { setSelectedCollection } from './reducers/collectionsSlice';
 const { groupRequestsByTime } = window.api;
@@ -22,6 +22,7 @@ const App = () => {
 
   useEffect(() => {
     const initializeDB = async () => {
+      // await cleanupDatabase();
       await initializeDatabase();
       
       // Add cleanup listener

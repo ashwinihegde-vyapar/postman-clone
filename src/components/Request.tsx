@@ -35,6 +35,8 @@ export default function Request({ setLoading, updateHistory, setRequestsInCollec
   const handleOnInputSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
     const timestamp = new Date().toISOString(); 
 
     try {

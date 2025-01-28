@@ -37,7 +37,7 @@ export async function initializeDatabase() {
       });
       
       // Add indexes
-      store.createIndex('url', 'url', { unique: false });
+      store.createIndex('url', 'url', { unique: true });
       store.createIndex('timestamp', 'timestamp', { unique: false });
       
       console.log('Store and indexes created successfully');
@@ -50,6 +50,7 @@ export async function storeAPIResponse(url, data) {
     const database = await initializeDatabase();
     const transaction = database.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
+    const index = store.index('url');
     
     const entry = {
       url: String(url),
@@ -58,15 +59,39 @@ export async function storeAPIResponse(url, data) {
     };
     
     return new Promise((resolve, reject) => {
-      const request = store.add(entry);
+      const getRequest = index.getKey(String(url));
       
-      request.onsuccess = () => {
-        console.log('Response stored successfully');
-        resolve(request.result);
+      getRequest.onsuccess = () => {
+        const existingKey = getRequest.result;
+        
+        // If existing entry found, delete it
+        if (existingKey) {
+          store.delete(existingKey).onsuccess = () => {
+            // After deletion, add the new entry
+            addNewEntry();
+          };
+        } else {
+          // If no existing entry, just add the new one
+          addNewEntry();
+        }
       };
+
+      function addNewEntry() {
+        const addRequest = store.add(entry);
+        
+        addRequest.onsuccess = () => {
+          console.log('Response stored successfully');
+          resolve(addRequest.result);
+        };
+        
+        addRequest.onerror = (event) => {
+          console.error('Error storing response:', event.target.error);
+          reject(event.target.error);
+        };
+      }
       
-      request.onerror = (event) => {
-        console.error('Error storing response:', event.target.error);
+      getRequest.onerror = (event) => {
+        console.error('Error checking for existing entry:', event.target.error);
         reject(event.target.error);
       };
     });
