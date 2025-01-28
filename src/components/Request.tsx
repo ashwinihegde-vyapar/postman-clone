@@ -3,9 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import '../assets/styles.css';
 import { addToHistory } from '../reducers/historySlice';
-import { setCollections } from '../reducers/collectionsSlice';
 
-const { addRequestToCollection, validateCollectionName } = window.api;
+const { addRequestToCollection, getRequestsInCollection, validateCollectionName } = window.api;
 
 export default function Request({ setResponse, setLoading, updateHistory, setRequestsInCollection }) {
   const dispatch = useDispatch();
@@ -22,15 +21,15 @@ export default function Request({ setResponse, setLoading, updateHistory, setReq
     userId: 1,
   });
 
-  // useEffect(() => {
-  //   const loadrequests = async() => {
-  //     if (selectedCollection) {
-  //       const loadedRequests = await getRequestsInCollection(selectedCollection) || [];
-  //       console.log(loadedRequests);
-  //     }
-  //   }
-  //   loadrequests();
-  // }, [selectedCollection]);
+  useEffect(() => {
+    const loadrequests = async() => {
+      if (selectedCollection) {
+        const loadedRequests = await getRequestsInCollection(selectedCollection) || [];
+        console.log(loadedRequests);
+      }
+    }
+    loadrequests();
+  }, [selectedCollection]);
 
   const handleOnInputSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,39 +37,37 @@ export default function Request({ setResponse, setLoading, updateHistory, setReq
     const timestamp = new Date().toISOString(); 
 
     try {
+      const collection_id = await validateCollectionName(collectionName);
+      if(collection_id) {
+        await addRequestToCollection({
+          collectionId: collection_id,
+          name: collectionName,
+          url: url,
+          method: reqMethod,
+          timestamp: timestamp
+        });
+        setRequestsInCollection((prev: any) => ({
+          ...prev,
+          [collection_id]: [...(prev[collection_id] || []), {
+            url,
+            method: reqMethod,
+            timestamp: new Date().toISOString()
+          }]
+        }));
+      }   
+    } catch (e) {
+      setError("Error: URL already exists in collection");
+    }
+
+    try {
       const res = await axios({
         url,
         method: reqMethod,
-        data: reqMethod === 'POST' ? bodyData : null,
+        data: reqMethod === '' ? bodyData : null,
       });
 
       setResponse(res);
       setLoading(false);
-
-      if (collectionName) {
-        try {
-          const collection_id = await validateCollectionName(collectionName);
-          if(collection_id) {
-            await addRequestToCollection({
-              collectionId: collection_id,
-              name: collectionName,
-              url: url,
-              method: reqMethod,
-              timestamp: timestamp
-            });
-            setRequestsInCollection((prev: any) => ({
-              ...prev,
-              [collection_id]: [...(prev[collection_id] || []), {
-                url,
-                method: reqMethod,
-                timestamp: new Date().toISOString()
-              }]
-            }));
-          }   
-        } catch (e) {
-          setError("Error: URL already exists in collection");
-        }
-      }
 
       const date = new Date().toLocaleDateString();
       dispatch(addToHistory({
