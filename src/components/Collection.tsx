@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import '../assets/collection.css';
+import { setCollections, setSelectedCollection} from '../reducers/collectionsSlice';
+import { setRequests } from '../reducers/requestsSlice';
+import { setHistory } from '../reducers/historySlice';
 
 const { getCollections, getRequestsInCollection, createCollection, 
   deleteCollection, groupRequestsByTime, addRequestToCollection, getCollectionName } = window.api;
 
-export default function Collection({ onSelectCollection, requests, setRequests, collections, setCollections}) {
+export default function Collection({ onSelectCollection, requestsInCollection, setRequestsInCollection }) {
+
+  const dispatch = useDispatch();
+  const requests = useSelector((state:any) => state.requests.items)
+  const collections = useSelector((state:any) => state.collections.items)
+  const selectedCollectionId = useSelector((state:any) => state.collections.selectedCollection)
+  const history = useSelector((state:any) => state.history.items)
 
   const [newCollectionName, setNewCollectionName] = useState('');
-  const [selectedCollectionId, setSelectedCollectionId] = useState(null);
-  const [requestsInCollection, setRequestsInCollection] = useState({});
   const [activeTab, setActiveTab] = useState('collection'); 
   const [showAddForm, setShowAddForm] = useState({});
   const [newRequest, setNewRequest] = useState({
@@ -19,7 +27,7 @@ export default function Collection({ onSelectCollection, requests, setRequests, 
   useEffect(() => {
     const loadCollections = async () => {
       const loadedCollections = await getCollections() || [];
-      setCollections(loadedCollections);
+      dispatch(setCollections(loadedCollections));
       console.log(loadedCollections);
     };
     loadCollections();
@@ -41,24 +49,32 @@ export default function Collection({ onSelectCollection, requests, setRequests, 
   }, [selectedCollectionId]);
 
   const updateHistory = async() => {
-      const latestRequests = await groupRequestsByTime();
+    const latestRequests = await groupRequestsByTime();
     
-      const groupedByDate = latestRequests.reduce((history, request) => {
-        const date = new Date(request.timestamp).toLocaleDateString();
-        if (!history[date]) history[date] = [];
-        history[date].push(request); 
-        return history;
-      }, {});
-    
-      setRequests(groupedByDate); 
-    };
+    // Create a map to store the latest request for each URL
+    const uniqueRequests = latestRequests.reduce((map, request) => {
+      map.set(request.url, request);
+      return map;
+    }, new Map());
+
+    // Convert back to array and group by date
+    const groupedByDate = Array.from(uniqueRequests.values()).reduce((history: any, request: any) => {
+      const date = new Date(request.timestamp).toLocaleDateString();
+      if (!history[date]) history[date] = [];
+      history[date].push(request); 
+      return history;
+    }, {});
+
+    dispatch(setHistory(groupedByDate));
+  };
 
   const handleCreateCollection = async() => {
     if (!newCollectionName.trim()) return;
     try {
       const newId = await createCollection(newCollectionName);
       const newCollection = { id: newId, name: newCollectionName };
-      setCollections((prev) => [...prev, newCollection]);
+      // setCollections((prev) => [...prev, newCollection]);
+      dispatch(setCollections([...collections, newCollection]));
       setNewCollectionName('');
       console.log(newCollection);
     }
@@ -68,13 +84,14 @@ export default function Collection({ onSelectCollection, requests, setRequests, 
   };
 
   const handleCollectionClick = (collectionId) => {
-    setSelectedCollectionId(collectionId);
+    dispatch(setSelectedCollection(collectionId));
     onSelectCollection(collectionId);
   };
 
   const handleDeleteCollection = async(collectionId) => {
     await deleteCollection(collectionId);
-    setCollections((prev) => prev.filter((collection) => collection.id !== collectionId));
+    // setCollections((prev) => prev.filter((collection) => collection.id !== collectionId));
+    dispatch(setCollections(collections.filter((collection) => collection.id !== collectionId)));
   };
 
   const handleAddRequest = async (collectionId) => {
@@ -207,33 +224,25 @@ export default function Collection({ onSelectCollection, requests, setRequests, 
       {/* History View */}
       {activeTab === 'history' && (
   <div>
-    <h3>History</h3>
-    {Object.keys(requests).length > 0 ? (
+    {Object.keys(history).length > 0 ? (
       <div className="history-container">
-        {Object.keys(requests).map((date) => (
+        {Object.entries(history).map(([date, requests]) => (
           <div key={date} className="history-date-group">
             <h4>{date}</h4>
             <ul>
-            {Object.keys(requests).map((date) => (
-            <div key={date} className="history-date-group">
-            <h4>{date}</h4>
-              <ul>
-                {Array.isArray(requests[date]) ? requests[date].map((request) => (
-                  <li key={`${request.id || request.timestamp}-${request.url}`} className="history-item">
-                    <strong>{request.method}</strong> - {request.url}
-                  </li>
-                )) : null}
-              </ul>
-            </div>
-          ))}
+              {Array.isArray(requests) && requests.map((request: any) => (
+                <li key={`${request.timestamp}-${request.url}`} className="history-item">
+                  <strong>{request.method}</strong> - {request.url}
+                </li>
+              ))}
             </ul>
           </div>
         ))}
       </div>
     ) : (
       <p>No history available.</p>
-      )}
-    </div>
+    )}
+  </div>
   )}
     </div>
   );

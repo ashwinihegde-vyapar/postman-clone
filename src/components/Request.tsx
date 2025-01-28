@@ -1,76 +1,93 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import '../assets/styles.css';
-import { storeAPIResponse } from '../utils/indexedDb';
-  
-const { addRequestToCollection, getRequestsInCollection, validateCollectionName} = window.api;
+import { addToHistory } from '../reducers/historySlice';
+import { setCollections } from '../reducers/collectionsSlice';
 
-export default function Request({ setResponse, setLoading, selectedCollection, updateHistory, collections}) {
+const { addRequestToCollection, validateCollectionName } = window.api;
+
+export default function Request({ setResponse, setLoading, updateHistory, setRequestsInCollection }) {
+  const dispatch = useDispatch();
+  const selectedCollection = useSelector((state: any) => state.collections.selectedCollection);
+  const collections = useSelector((state: any) => state.collections.items);
+
   const [url, setUrl] = useState("");
   const [reqMethod, setReqMethod] = useState('GET');
   const [collectionName, setCollectionName] = useState("");
-  // const [isOnline, setIsOnline] = useState(navigator.onLine);
-
+  const [error, setError] = useState("");
   const [bodyData, setBodyData] = useState({
     title: '',
     body: '',
     userId: 1,
   });
 
-  // const [requests, setRequests] = useState({});
-  const [error, setError] = useState("");
+  // useEffect(() => {
+  //   const loadrequests = async() => {
+  //     if (selectedCollection) {
+  //       const loadedRequests = await getRequestsInCollection(selectedCollection) || [];
+  //       console.log(loadedRequests);
+  //     }
+  //   }
+  //   loadrequests();
+  // }, [selectedCollection]);
 
-  useEffect(() => {
-    const loadrequests = async() => {
-      if (selectedCollection) {
-        const loadedRequests = await getRequestsInCollection(selectedCollection) || [];
-        console.log(loadedRequests);
-      }
-    }
-    loadrequests();
-  }, [selectedCollection]);
-
-  const handleOnInputSend = async (e) => {
+  const handleOnInputSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const timestamp = new Date().toISOString(); 
 
     try {
-      const collection_id = await validateCollectionName(collectionName);
-      console.log(collection_id);
-      if(collection_id) {
-        await addRequestToCollection({
-          collectionId: collection_id,
-          name: collectionName,
-          url: url,
-          method: reqMethod,
-          timestamp: timestamp
-        });
-      }   
-    } 
-    catch (e) {
-      setError("Error: URL already exists in collection");
-      // console.log(e);
-    }
-  try {
-        const res = await axios({
+      const res = await axios({
+        url,
+        method: reqMethod,
+        data: reqMethod === 'POST' ? bodyData : null,
+      });
+
+      setResponse(res);
+      setLoading(false);
+
+      if (collectionName) {
+        try {
+          const collection_id = await validateCollectionName(collectionName);
+          if(collection_id) {
+            await addRequestToCollection({
+              collectionId: collection_id,
+              name: collectionName,
+              url: url,
+              method: reqMethod,
+              timestamp: timestamp
+            });
+            setRequestsInCollection((prev: any) => ({
+              ...prev,
+              [collection_id]: [...(prev[collection_id] || []), {
+                url,
+                method: reqMethod,
+                timestamp: new Date().toISOString()
+              }]
+            }));
+          }   
+        } catch (e) {
+          setError("Error: URL already exists in collection");
+        }
+      }
+
+      const date = new Date().toLocaleDateString();
+      dispatch(addToHistory({
+        date,
+        request: {
           url,
           method: reqMethod,
-          data: reqMethod === '' ? bodyData : null,
-        });
+          timestamp: new Date().toISOString()
+        }
+      }));
 
-        setResponse(res);
-        setLoading(false);
-
-        // const updatedRequests = getRequestsInCollection(selectedCollection) || [];
-        // setRequests(updatedRequests);
-        updateHistory();
-      }
-    catch (e) {
+      updateHistory();
+    } catch (e) {
       console.error('Error:', e);
       setLoading(false);
     }
-  }
+  };
   
   return (
     <div className="request-manager">

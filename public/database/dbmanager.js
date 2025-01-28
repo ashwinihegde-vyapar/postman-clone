@@ -61,7 +61,9 @@ async function getCollections() {
 }
 
 async function getCollectionName(id) {
-  return db.prepare(`SELECT name FROM collections WHERE id= ?`).get(id).name;
+  const stmt = db.prepare(`SELECT name FROM collections WHERE id= ?`);
+  const result = stmt.get(id);
+  return result.name;
 } 
 
 async function getRequestsInCollection(collectionId) {

@@ -1,29 +1,27 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import './assets/App.css';
 import Request from './components/Request.tsx';
 import Response from './components/Response.tsx';
 import Collection from './components/Collection.tsx';
-
-import { initializeDatabase, cleanupDatabase } from './utils/indexedDb';
-
-
+import { initializeDatabase } from './utils/indexedDb';
+import { setHistory } from './reducers/historySlice';
+import { setSelectedCollection } from './reducers/collectionsSlice';
 const { groupRequestsByTime } = window.api;
 
 const App = () => {
+  const dispatch = useDispatch();
+  const selectedCollection = useSelector((state: any) => state.collections.selectedCollection);
+  const history = useSelector((state: any) => state.history.items);
   
+  const [requestsInCollection, setRequestsInCollection] = useState({});
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState(0);
-  const [requests, setRequests] = useState({});
-  const [collections, setCollections] = useState([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [cachedResponses, setCachedResponses] = useState({});
   const [error, setError] = useState("");
-
 
   useEffect(() => {
     const initializeDB = async () => {
-      // await cleanupDatabase();
       await initializeDatabase();
       
       // Add cleanup listener
@@ -46,7 +44,6 @@ const App = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Load initial data
     updateHistory();
 
     return () => {
@@ -55,13 +52,28 @@ const App = () => {
     };
   }, []);
 
-  const handleCollectionSelect = (collectionId) => {
-    setSelectedCollection(collectionId);
+  const handleCollectionSelect = (collectionId: string) => {
+    dispatch(setSelectedCollection(collectionId));
   };
 
   const updateHistory = async() => {
-    const latestRequests = await groupRequestsByTime() || [];
-    setRequests(latestRequests);
+    try {
+      const latestRequests = await groupRequestsByTime() || [];
+      
+      // Group requests by date
+      const groupedByDate = latestRequests.reduce((acc: any, request: any) => {
+        const date = new Date(request.timestamp).toLocaleDateString();
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(request);
+        return acc;
+      }, {});
+      
+      dispatch(setHistory(groupedByDate));
+    } catch (error) {
+      console.error('Error updating history:', error);
+    }
   };
 
   return (
@@ -72,28 +84,22 @@ const App = () => {
         </div>
       )}
       
-      {/* Display collections on the left */}
-      <Collection 
-      onSelectCollection={handleCollectionSelect}
-      requests={requests}
-      setRequests={setRequests}
-      collections={collections}
-      setCollections={setCollections}
-       />
+      <Collection onSelectCollection={handleCollectionSelect}
+      requestsInCollection={requestsInCollection}
+      setRequestsInCollection={setRequestsInCollection}
+      />
   
-        <div className="request-response-container">
-          {isOnline &&
+      <div className="request-response-container">
+        {isOnline &&
           <Request
             setResponse={setResponse}
             setLoading={setLoading}
-            selectedCollection={selectedCollection}
             updateHistory={updateHistory}
-            collections={collections}
-            // setError={setError}
+            setRequestsInCollection={setRequestsInCollection}
           />
-          }
-          <Response response={response} loading={loading} error={error} isOnline={isOnline} />
-        </div>
+        }
+        <Response response={response} loading={loading} error={error} isOnline={isOnline} />
+      </div>
     </div>
   );
 };
